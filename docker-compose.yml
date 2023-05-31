@@ -54,10 +54,6 @@ services:
         container_name: app
 # Se define el nombre que poseera la imagen
         image: 'aanzorena/app-tareas'
-# Instruccion build que indica el contexto y el archivo Dockerfile a utilizar para generar la imagen de la Aplicación Web
-        build:
-          context: ./app-registrar-tareas
-          dockerfile: Dockerfile
 # Alias para poder acceder a la db con el nombre percona
         links:
           - "db:percona"

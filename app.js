@@ -6,10 +6,10 @@ const mysql = require('mysql');
 const tasksRoutes = require('./routes/tasks');
 
 const dbOptions = {
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  port: process.env.MYSQL_PORT,
+  host: process.env.MYSQL_HOST || '127.0.0.1',
+  user: process.env.MYSQL_USER || 'root',
+  password: process.env.MYSQL_PASSWORD || 'pass123',
+  port: process.env.MYSQL_PORT || 3306,
   database: process.env.MYSQL_DATABASE  || "registroTareas",
   multipleStatements: true
 };

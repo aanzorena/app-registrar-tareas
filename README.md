@@ -17,6 +17,8 @@ Entre las funciones que admite, se encuentran:
 - Eliminación de la tarea
 - Persistencia a traves de una DB Percona 5.7
 
+La aplicacion, por defecto, escucha en el puerto 8081.
+
 ## Instalación
 
 Si desea probar la aplicacion, debe contar con los siguientes pre-requisitos:
@@ -27,7 +29,7 @@ Si desea probar la aplicacion, debe contar con los siguientes pre-requisitos:
 Para ejecutar el docker-compose, hay que situarse en el directorio raiz del repositorio y ejecutar el siguiente comando:
 
 ```bash
-docker compose up -d
+docker-compose up -d
 ```
 
 ## Desarrollo
@@ -60,7 +62,7 @@ npm install
 1) Ejecutar la aplicación
 
 ```bash
-npm run
+npm start
 ```
 
 2) Ejecutar la aplicación en mode dev
