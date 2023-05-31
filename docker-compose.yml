@@ -1,0 +1,82 @@
+version: '3.4'
+################################################## TEMPLATE #######################################################################################
+# Template con configuración que se repite en ambos servicios
+x-template: &template
+# La red en la que se desplegara el contenedor
+        networks: 
+            - red-app-registros
+# Se inicia el contenedor, salvo que sea parado
+        restart: unless-stopped
+services:
+################################################# INIT CONTAINER ####################################################################################
+# Se definen el init-container que setea los directorios con sus permisos
+    init-container:
+        <<: *template
+# Nombre del contenedor
+        container_name: init-container
+# Se define la imagen de alpine para correr los comandos de creacion de directorios y permisos
+        image: 'alpine:3.17'
+# Se monta el working directory actual al contenedor
+        volumes:
+            - '${PWD}:/app'
+        restart: "no"
+# Creacion del directorio y se configura el ownership al mysqld (userid 999)
+        command: sh -c "mkdir -p /app/dir-volumenes/app-data /app/dir-volumenes/database-data && chown -R 999:999 /app/dir-volumenes"
+################################################### SERVICIOS DE LA APP ##############################################################################
+# Se definen el servicio de la db
+    db:
+        <<: *template
+# Nombre del contenedor
+        container_name: percona
+# Se define la imagen del registry privado de Harbor
+        image: 'aanzorena/percona-app-tareas:5.7'
+# Variable de ambiente para inicializar el usuario de la Base de datos
+        environment:
+            - MYSQL_ROOT_PASSWORD=pass123
+# Directorio del host en donde mapeara el directorio de datos del contenedor
+        volumes:
+            - '${PWD}/dir-volumenes/database-data:/var/lib/mysql'
+# Depende de la correcta configuracion y terminacion del init-container
+        depends_on:
+            init-container:
+                         condition: service_completed_successfully
+# Control de que la DB haya iniciado correctamente y pueda recibir conexiones
+        healthcheck:
+            test: mysqladmin ping -h localhost -u root --password=$${MYSQL_ROOT_PASSWORD}      
+            start_period: 10s
+            interval: 5s
+            timeout: 5s
+            retries: 10
+# Se definen el servicio de la aplicación web
+    app:
+        <<: *template
+# Nombre del contenedor
+        container_name: app
+# Se define el nombre que poseera la imagen
+        image: 'aanzorena/app-tareas'
+# Instruccion build que indica el contexto y el archivo Dockerfile a utilizar para generar la imagen de la Aplicación Web
+        build:
+          context: ./app-registrar-tareas
+          dockerfile: Dockerfile
+# Alias para poder acceder a la db con el nombre percona
+        links:
+          - "db:percona"
+# Variables de ambiente que indican los parametros de conexión a la base de datos
+        environment:
+            - MYSQL_USER=root
+            - MYSQL_PASSWORD=pass123
+            - MYSQL_HOST=percona
+            - MYSQL_PORT=3306
+# Se mapea el puerto 8081 en el que escucha la aplicación al puerto 8081 del Host
+        ports:
+            - "8081:8081"
+# Directorio del host en donde mapeara el directorio de datos del contenedor
+        volumes:
+            - '${PWD}/dir-volumenes/app-data:/datos'
+# Depende de que se inicie exitosamente el servicio de la base de datos para poder iniciar
+        depends_on:
+            db:
+                condition: service_healthy
+# Se define la red de docker para los contenedores
+networks:
+    red-app-registros:
