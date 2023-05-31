@@ -52,7 +52,7 @@ Como pre-requisito se requiere:
 docker run -d --restart=unless-stopped --name db -e MYSQL_ROOT_PASSWORD=pass123 -v $(pwd)/datos:/var/lib/mysql -p3306:3306 aanzorena/percona-app-tareas:5.7
 ```
 
-2) Instalar las dependencias
+3) Instalar las dependencias
 
 ```bash
 npm install
